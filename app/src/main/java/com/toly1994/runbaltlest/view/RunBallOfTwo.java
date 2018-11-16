@@ -40,6 +40,7 @@ public class RunBallOfTwo extends View {
     private float mMinY;//Y最小值
     private PorterDuffXfermode[] mModes;
     private Point mWinSize;
+    private Ball mBall;
 
     public RunBallOfTwo(Context context) {
         this(context, null);
@@ -52,7 +53,7 @@ public class RunBallOfTwo extends View {
 
     private void init() {
 
-        mCoo = new Point(500, 500);
+        mCoo = new Point(20, 300);
 
         mWinSize = new Point();
 
@@ -63,6 +64,7 @@ public class RunBallOfTwo extends View {
         mMaxY = mWinSize.y - mCoo.y - 50;
         mMinY = -mCoo.y + 50;
 
+        mBall = new Ball();
 
         //初始画笔
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -75,14 +77,27 @@ public class RunBallOfTwo extends View {
         mHelpPaint.setStrokeWidth(3);
 
         //初始化时间流ValueAnimator
-        mAnimator = ValueAnimator.ofFloat(0, 1);
+
+        Ball startBall = new Ball();
+        startBall.color = Color.RED;
+        startBall.r = 20;
+
+        Ball endBall = startBall.clone();
+        endBall.x = 1800;
+        endBall.y = 300;
+
+
+        mAnimator = ValueAnimator.ofObject(new SinEvaluator(), startBall, endBall);
+
         mAnimator.setRepeatCount(-1);
-        mAnimator.setDuration(2000);
+        mAnimator.setDuration(8000);
         mAnimator.setRepeatMode(ValueAnimator.REVERSE);
         mAnimator.setInterpolator(new LinearInterpolator());
         mAnimator.addUpdateListener(animation -> {
-            updateBall();//更新小球位置
+
+            mBall = (Ball) animation.getAnimatedValue();
             invalidate();
+//            updateBall();//更新小球位置
         });
     }
 
@@ -91,7 +106,11 @@ public class RunBallOfTwo extends View {
         super.onDraw(canvas);
         canvas.save();
         canvas.translate(mCoo.x, mCoo.y);
-        drawBalls(canvas, mBalls);
+
+        canvas.drawLine(0,0,1800,0,mPaint);
+        canvas.drawLine(0,100,1800,100,mPaint);
+        canvas.drawLine(0,-100,1800,-100,mPaint);
+        drawBall(canvas, mBall);
         canvas.restore();
 
     }
@@ -107,6 +126,18 @@ public class RunBallOfTwo extends View {
             mPaint.setColor(ball.color);
             canvas.drawCircle(ball.x, ball.y, ball.r, mPaint);
         }
+    }
+
+
+    /**
+     * 绘制小球集合
+     *
+     * @param canvas
+     * @param ball   小球集合
+     */
+    private void drawBall(Canvas canvas, Ball ball) {
+        mPaint.setColor(ball.color);
+        canvas.drawCircle(ball.x, ball.y, ball.r, mPaint);
     }
 
     /**
@@ -168,18 +199,22 @@ public class RunBallOfTwo extends View {
     }
 
     private void initBalls() {
-        for (int i = 0; i < 2; i++) {
-            Ball mBall = new Ball();
-            mBall.color = Color.RED;
-            mBall.r = 80;
-            mBall.vX = (float) (Math.pow(-1, Math.ceil(Math.random() * 1000)) * 20 * Math.random());
-            mBall.vY = rangeInt(-15, 35);
-            mBall.aY = 0.98f;
-            mBalls.add(mBall);
-        }
-        mBalls.get(1).x = 300;
-        mBalls.get(1).y = 300;
-        mBalls.get(1).color = Color.BLUE;
+        Ball startBall = new Ball();
+        startBall.color = Color.RED;
+        startBall.r = 20;
+        startBall.vX = (float) (Math.pow(-1, Math.ceil(Math.random() * 1000)) * 20 * Math.random());
+        startBall.vY = rangeInt(-15, 35);
+        startBall.aY = 0.98f;
+
+
+        Ball endBall = startBall.clone();
+        endBall.x = 2000;
+        endBall.y = 2000;
+
+//        mBalls.add(startBall);
+//        mBalls.get(1).x = 2000;
+//        mBalls.get(1).y = 300;
+//        mBalls.get(1).color = Color.BLUE;
     }
 
     /**
